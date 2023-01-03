@@ -11,4 +11,4 @@ Code is written for an Arduino Micro.
 3. [0.56" 4-Digit 7-Segment Display](https://www.adafruit.com/product/881)
 4. [Arduino Micro](https://store-usa.arduino.cc/products/arduino-micro?selectedStore=us)
 5. M2 screws and nuts
-6. [3D-Printed Parts](https://www.thingiverse.com/thing:5761761)
+6. [3D-Printed Parts](https://www.printables.com/model/357467-mini-piano-arcade-game)
