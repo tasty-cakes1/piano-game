@@ -3,6 +3,12 @@ Arduino code for a [Grand Piano Keys](https://www.baytekent.com/grand-piano-keys
 
 Code is written for an Arduino Micro.
 
+## Dependencies
+1. [Adafruit LED Backpack Library by Adafruit](https://github.com/adafruit/Adafruit_LED_Backpack)
+2. [MD_MAX72XX Library by majicDesigns](https://github.com/MajicDesigns/MD_MAX72XX)
+
+Both of these libraries are available for download through the Arduino IDE Library Manager.
+
 ## Wiring
 
 ## Materials
@@ -11,4 +17,4 @@ Code is written for an Arduino Micro.
 3. [0.56" 4-Digit 7-Segment Display](https://www.adafruit.com/product/881)
 4. [Arduino Micro](https://store-usa.arduino.cc/products/arduino-micro?selectedStore=us)
 5. M2 screws and nuts
-6. [3D-Printed Parts](https://www.printables.com/model/357467-mini-piano-arcade-game)
+6. [3D-Printed Parts](https://www.thingiverse.com/thing:5761761)
