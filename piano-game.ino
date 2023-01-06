@@ -1,3 +1,5 @@
+#include <EEPROM.h>
+
 #include <Adafruit_LEDBackpack.h>
 #include <MD_MAX72xx.h>
 
@@ -37,6 +39,9 @@ byte key_presses=0;
 bool start=false;
 unsigned int score=0;
 unsigned long startTime;
+
+unsigned int highScores[3];
+char initials[3][4];
 
 void stripe()
 // Demonstrates animation of a diagonal stripe moving across the display
@@ -186,24 +191,66 @@ void printFlash() {
   }
 }
 
-void setup() {
-  for(int i=0;i<4;i++){
-    pinMode(KEY_PINS[i],INPUT_PULLUP);
-  }
-  scoreTimer.begin(0x70);
-  scoreTimer.setBrightness(0);
-  mx.begin();
-  mx.control(MD_MAX72XX::INTENSITY,0);
-  randomSeed(analogRead(3));
-  for(int i=0;i<8;i++) {
-    key_list[i]=(byte)random(4);
+void clearHighScores() {
+  for(int i=0;i<3;i++){
+    highScores[i]=0;
+    EEPROM.put(i*(sizeof(highScores[0])+sizeof(initials[0])),highScores[i]);
   }
 }
 
-String getInitials() {
+void printHighScores() {
+  for(int i=0;i<3;i++){
+    if(highScores[i]==0){
+      return;
+    }
+    mx.clear();
+    for(int j=0;j<3;j++){
+      char temp[2];
+      temp[0]=initials[i][j];
+      temp[1]='\0';
+      printText(2-j,2-j,temp);
+    }
+    scoreTimer.print(highScores[i]);
+    scoreTimer.writeDisplay();
+    for(int j=0;j<2000;j++){
+      delay(1);
+      readKeys();
+      if(key_presses!=0){
+        delay(100);
+        readKeys();
+        unsigned long t=millis();
+        while(key_presses==15){
+          readKeys();
+          if(millis()-t>10000){
+            mx.clear();
+            printText(0,3,"Clear?");
+          }
+          if(millis()-t>15000){
+            mx.clear();
+            printText(0,3,"Clear!");
+            delay(2000);
+            clearHighScores();
+            while(key_presses!=0){
+              readKeys();
+            }
+            delay(20);
+            return;
+          }
+        }
+        start=true;
+        mx.clear();
+        return;
+      }
+    }
+    scoreTimer.clear();
+    scoreTimer.writeDisplay();
+  }
+}
+
+void getInitials(char* buf) {
   mx.clear();
-  char test[1]={char(16)};
-  printText(0,0,test);
+  char arrow[2]={char(16),'\0'};
+  printText(0,0,arrow);
   char initials[]="   ";
   char temp[2];
   readKeys();
@@ -222,11 +269,36 @@ String getInitials() {
       }
     }
   }
-  return initials;
+  delay(20);
+  while(key_presses!=0){
+    readKeys();
+  }
+  delay(20);
+
+  strcpy(buf, initials);
+}
+
+void setup() {
+  for(int i=0;i<4;i++){
+    pinMode(KEY_PINS[i],INPUT_PULLUP);
+  }
+  scoreTimer.begin(0x70);
+  scoreTimer.setBrightness(0);
+  mx.begin();
+  mx.control(MD_MAX72XX::INTENSITY,0);
+  randomSeed(analogRead(3));
+  for(int i=0;i<8;i++) {
+    key_list[i]=(byte)random(4);
+  }
+  for(int i=0;i<3;i++) {
+    EEPROM.get(i*(sizeof(highScores[0])+sizeof(initials[0])),highScores[i]);
+    EEPROM.get(i*(sizeof(highScores[0])+sizeof(initials[0]))+sizeof(highScores[0]),initials[i]);
+  }
 }
 
 void loop()
 {
+  printHighScores();
   stripe();
   // readKeys();
   // if(key_presses){
@@ -278,6 +350,45 @@ void loop()
         scoreTimer.print(score);
         scoreTimer.writeDisplay();
         delay(500);
+      }
+      if(score>highScores[2]){
+        scrollText("High Score!          ");
+        char initial[4];
+        getInitials(initial);
+        if(score>highScores[0]){
+          highScores[2]=highScores[1];
+          highScores[1]=highScores[0];
+          highScores[0]=score;
+          strcpy(initials[2],initials[1]);
+          strcpy(initials[1],initials[0]);
+          strcpy(initials[0],initial);
+        }
+        else if(score>highScores[1]){
+          highScores[2]=highScores[1];
+          highScores[1]=score;
+          strcpy(initials[2],initials[1]);
+          strcpy(initials[1],initial);
+        }
+        else{
+          highScores[2]=score;
+          strcpy(initials[2],initial);
+        }
+        for(int i=0;i<3;i++) {
+          EEPROM.put(i*(sizeof(highScores[0])+sizeof(initials[0])),highScores[i]);
+          EEPROM.put(i*(sizeof(highScores[0])+sizeof(initials[0]))+sizeof(highScores[0]),initials[i]);
+        }
+      }
+      else{
+        mx.clear();
+        readKeys();
+        while(key_presses==0){
+          readKeys();
+        }
+        delay(20);
+        while(key_presses!=0){
+          readKeys();
+        }
+        delay(20);
       }
       score=0;
     }
