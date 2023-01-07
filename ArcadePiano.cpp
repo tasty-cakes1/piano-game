@@ -17,8 +17,6 @@ ArcadePiano::ArcadePiano(uint8_t key1Pin,uint8_t key2Pin,uint8_t key3Pin,uint8_t
     EEPROM.get(i*(sizeof(highScores[0])+sizeof(initials[0])),highScores[i]);
     EEPROM.get(i*(sizeof(highScores[0])+sizeof(initials[0]))+sizeof(highScores[0]),initials[i]);
   }
-
-  randomSeed(analogRead(3));
 }
 
 
@@ -29,6 +27,8 @@ void ArcadePiano::begin()
 
   mx.begin();
   mx.control(MD_MAX72XX::INTENSITY,0);
+  
+  randomSeed(analogRead(A3));
 }
 
 
@@ -68,23 +68,27 @@ void ArcadePiano::startGame()
         }
         else{
           mx.clear();
-          for(int i=0;i<4;i++){
+          delay(500);
+          for(int i=0;i<2;i++){
+            printKeys(keyQueue,keyQueueStartIndex);
             delay(500);
             mx.clear();
             delay(500);
-            printKeys(keyQueue,keyQueueStartIndex);
           }
+          printKeys(keyQueue,keyQueueStartIndex);
           break;
         }  
       }
       if(i==3 && keyPresses!=0){
         mx.clear();
-        for(int i=0;i<4;i++){
+        delay(500);
+        for(int i=0;i<2;i++){
+          printKeys(keyQueue,keyQueueStartIndex);
           delay(500);
           mx.clear();
           delay(500);
-          printKeys(keyQueue,keyQueueStartIndex);
         }
+        printKeys(keyQueue,keyQueueStartIndex);
         break;
       }
     }
@@ -202,7 +206,7 @@ void ArcadePiano::printHighScores()
               clearHighScores();
               while(getKeyPresses()!=0);
               delay(20);
-              return;
+              continue;
             }
           }
           mx.clear();
